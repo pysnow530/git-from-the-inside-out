@@ -1,4 +1,14 @@
-## git内部实现
+Translated from <http://maryrosecook.com/blog/post/git-from-the-inside-out>.
+
+## git内部实现原理
+
+本文主要解释git的工作原理。如果你是一个视频党，请移步[youtube视频](https://www.youtube.com/watch?v=fCtZWGhQBvo)。
+
+本文假设你已经有能力使用git来对项目做版本控制。我们主要考察支撑git的图结构和指导git行为的图属性。在考察原理时，我们会创建真实的状态模型，而不是通过各种实验的结果妄做猜想。通过这个真实的状态模型，我们可以更直观地了解git已经做了什么，正在做什么，以及接下来要做什么。
+
+本文结构组织为一系列的git动作，针对一个单独的项目展开。我们偶尔会观察一下git当前状态的图结构，并解释图属性及其产生的行为。
+
+如果你读完本文后仍意犹未尽，可以看一下[我对Git的JavaScript实现](http://gitlet.maryrosecook.com/docs/gitlet.html) (包含大量注释) 。
 
 ### 创建项目
 
