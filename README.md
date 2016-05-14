@@ -12,6 +12,20 @@ Translated from <http://maryrosecook.com/blog/post/git-from-the-inside-out>.
 
 ### 创建项目
 
+    ~ $ mkdir alpha
+    ~ $ cd alpha
+    
+创建项目目录`alpha`。
+
+    ~/alpha $ mkdir data
+    ~/alpha $ printf 'a' > data/letter.txt
+    
+进入`alpha`目录，创建目录`data`。在`data`目录下，创建内容为`a`的文件`letter.txt`。终了，`alpha`的目录结构如下：
+
+    alpha
+    └── data
+        └── letter.txt
+
 ### 初始化仓库
 
 ### 添加文件
