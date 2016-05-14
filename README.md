@@ -28,6 +28,22 @@ Translated from <http://maryrosecook.com/blog/post/git-from-the-inside-out>.
 
 ### 初始化仓库
 
+    ~/alpha $ git init
+    Initialized empty Git repository
+    
+`git init`命令将当前目录加到Git仓库。为此，它会在当前目录下创建一个`.git`目录并写入一些文件。这些文件记录了Git配置和版本历史的所有东西。它们都是一些普通的文件，没什么特别。用户可以使用编辑器或shell对它们进行浏览或编辑。也就是说，用户可以像编辑他们的项目文件一样来浏览或编辑项目的版本历史。
+
+现在，`alpha`的目录结构变成了这个样子：
+
+    alpha
+    ├── data
+    │   └── letter.txt
+    └── .git
+        ├── objects
+        etc...
+        
+`.git`目录及内容是由Git创建的。其它文件被称作working copy，由用户创建。
+
 ### 添加文件
 
 ### 创建提交
