@@ -42,9 +42,50 @@ Translated from <http://maryrosecook.com/blog/post/git-from-the-inside-out>.
         ├── objects
         etc...
         
-`.git`目录及内容是由Git创建的。其它文件被称作working copy，由用户创建。
+`.git`目录及内容是由Git创建的。其它文件组成工作区，由用户创建。
 
 ### 添加文件
+
+    ~/alpha $ git add data/letter.txt
+    
+添加文件`data/letter.txt`到Git。此操作有两个影响。
+
+第一，它会在`.git/objects/`目录下创建一个新的blob文件。
+
+这个blob文件包含了`data/letter.txt`文件压缩后的内容。文件名取自内容的哈希值。哈希意味着执行一段算法，将给定内容转换为更小的，且能唯一确定原内容的值的过程。例如，Git对`a`作哈希得到`2e65efe2a145dda7ee51d1741299f848e5bf752e`。哈希值的头两个字符用作对象数据库的目录名：`.git/objects/2e/`，剩下的字符用作blob文件的文件名：`.git/objects/2e/65efe2a145dda7ee51d1741299f848e5bf752e`。
+
+注意刚才添加文件时Git是如何把它的内容保存到`objects`目录的。即使我们从工作区把`data/letter.txt`文件删掉，它的内容在Git内仍然不会丢失。
+
+第二，它会将`data/letter.txt`文件添加到index。index是一个文件列表，它记录有我们想要跟踪的所有文件。它保存为`.git/index`文件，每一行维护一个文件名到（添加到index时的）文件内容哈希值的映射。执行`git add`命令后的index如下：
+
+    data/letter.txt 2e65efe2a145dda7ee51d1741299f848e5bf752e
+    
+创建一个内容为`1234`的文件`data/number.txt`。
+
+    ~/alpha $ printf '1234' > data/number.txt
+    
+现在工作区的目录结构：
+
+    alpha
+    └── data
+        ├── letter.txt
+        └── number.txt
+        
+将`data/number.txt`文件加入到Git。
+
+    ~/alpha $ git add data
+    
+`git add`命令添加一个包含`data/number.txt`内容的blob对象，然后添加一个index项将`data/number.txt`指向刚刚创建的blob对象。执行完后的index：
+
+    data/letter.txt 2e65efe2a145dda7ee51d1741299f848e5bf752e
+    data/number.txt 274c0052dd5408f8ae2bc8440029ff67d79bc5c3
+    
+注意，虽然我们执行的是`git add data`，但只有`data`目录内的文件被加到index。`data`目录不会被加入。
+
+    ~/alpha $ printf '1' > data/number.txt
+    ~/alpha $ git add data
+    
+我们原打算在`data/number.txt`内写入`1`而不是刚才的`1234`，现在修正一下，然后将文件重新加到index。这条命令会为新的内容重新生成一个新的blob文件，并更新`data/number.txt`在index中的指向。
 
 ### 创建提交
 
@@ -62,7 +103,7 @@ Translated from <http://maryrosecook.com/blog/post/git-from-the-inside-out>.
 
 ### 检出分支
 
-### 检出与working copy不兼容的分支
+### 检出与工作区不兼容的分支
 
 ### 合并祖先提交
 
