@@ -102,7 +102,7 @@ Translated from <http://maryrosecook.com/blog/post/git-from-the-inside-out>.
 
 树图有两类对象组成：blob和tree。
 
-blob是在执行`git add`命令时创建的，用来保存文件内容。
+blob是在执行`git add`命令时创建的，用来保存项目文件的内容。
 
 tree是在创建提交时产生的，一个tree代表着工作区的一个目录。
 
@@ -119,7 +119,7 @@ tree是在创建提交时产生的，一个tree代表着工作区的一个目录
 
     040000 tree 0eed1217a2947f4930583229987d90fe5e8e0b74 data
 
-这仅有的一行指向`data`这棵树。
+这仅有的一行指向`data`这个树对象。
 
 ![Tree graph for the a1 commit](images/1-a1-tree-graph.png)
 
@@ -127,7 +127,7 @@ tree是在创建提交时产生的，一个tree代表着工作区的一个目录
 
 #### 创建提交对象
 
-`git commit`在创建完树图后会创建一个提交对象。提交对象只是`.git/objects/`目录下的另一种文本文件：
+`git commit`在创建完树图后会创建一个提交对象。提交对象是`.git/objects/`目录下的另一种文本文件：
 
     tree ffe298c3ce8bb07326f888907996eaa48d266db4
     author Mary Rose Cook <mary@maryrosecook.com> 1424798436 -0500
@@ -143,25 +143,25 @@ tree是在创建提交时产生的，一个tree代表着工作区的一个目录
 
 最后，commit命令将当前分支指向新的提交。
 
-哪个是当前分支呢？Git查看保存`HEAD`的文件`.git/HEAD`，此时它的内容是：
+那么，哪个是当前分支呢？Git查看保存`HEAD`的文件`.git/HEAD`，此时它的内容是：
 
     ref: refs/heads/master
 
 好了，`HEAD`现在指向`master`，`master`就是我们的当前分支。
 
-`HEAD`和`master`都是引用。引用是一个标签，Git或用户通过它来确定某个提交。
+`HEAD`和`master`都是引用。引用即一个标记，Git或用户通过它来找到某个提交。
 
-代表`master`引用的文件还不存在，因为这是我们在该仓库的第一个提交。Git会创建该文件`.git/refs/heads/master`并写入提交对象的哈希值：
+代表`master`引用的文件还不存在，因为这是我们在该仓库的第一个提交。不过不用担心，Git会创建该文件`.git/refs/heads/master`并写入提交对象的哈希值：
 
     74ac3ad9cde0b265d2b4f1c778b283a6e2ffbafd
     
-注意：如果你是跟着本文指令边读边敲，你的`a1`提交生成的哈希值会跟上值不同。像blob和tree这样以内容计算哈希的对象，它们的哈希值与本文相同。提交不然，因为它的哈希值包含了日期和提交作者的信息。
+注意：如果你是跟着本文边读边敲，你的`a1`提交生成的哈希值会跟上值不同。像blob和tree这样以内容计算哈希的对象，它们的哈希值与本文相同。提交不然，因为它的哈希值包含了日期和提交作者的信息。
 
 现在把`HEAD`和`master`加到图里：
 
 ![HEAD pointing at master and master pointing at the a1 commit](images/3-a1-refs.png)
 
-`HEAD`指向`master`，这跟执行提交前一样。但是`master`现在已经存在了，而且它指向了新的提交对象。
+`HEAD`指向`master`，这跟提交前一样。但是`master`现在已经存在了，而且它指向了新的提交对象。
 
 ### 创建第二个提交
 
