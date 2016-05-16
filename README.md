@@ -127,6 +127,18 @@ tree是在创建提交时产生的，一个tree代表着工作区的一个目录
 
 #### 创建提交对象
 
+`git commit`在创建完树图后会创建一个提交对象。提交对象只是`.git/objects/`目录下的另一种文本文件：
+
+    tree ffe298c3ce8bb07326f888907996eaa48d266db4
+    author Mary Rose Cook <mary@maryrosecook.com> 1424798436 -0500
+    committer Mary Rose Cook <mary@maryrosecook.com> 1424798436 -0500
+    
+    a1
+    
+第一行指向一棵树。通过这里的哈希值，我们可以找到一个指向工作区根目录（即alpha目录）的tree对象。最后一行是提交信息。
+
+![a1 commit object pointing at its tree graph](images/2-a1-commit.png)
+
 #### 将当前分支指向新提交
 
 ### 创建第二个提交
