@@ -98,6 +98,33 @@ Translated from <http://maryrosecook.com/blog/post/git-from-the-inside-out>.
 
 #### 创建树图
 
+树图记录着index内对应文件 (即项目文件) 的位置和内容，Git通过树图来记录项目的当前状态。
+
+树图有两类对象组成：blob和tree。
+
+blob是在执行`git add`命令时创建的，用来保存文件内容。
+
+tree是在创建提交时产生的，一个tree代表着工作区的一个目录。
+
+创建提交后，记录`data`目录内容的tree对象如下：
+
+    100664 blob 2e65efe2a145dda7ee51d1741299f848e5bf752e letter.txt
+    100664 blob 56a6051ca2b02b04ef92d5150c9ef600403cb1de number.txt
+    
+第一行记录了恢复`data/letter.txt`文件需要的所有信息。第一部分表示该文件的权限，第二部分表示该行记录的是一个blob对象，第三行表示该blob的哈希值，第四行表示文件名。
+
+第二行是`data/number.txt`文件的信息。
+
+下面是`alpha`目录 (项目的根目录) 的树对象：
+
+    040000 tree 0eed1217a2947f4930583229987d90fe5e8e0b74 data
+    
+这仅有的一行指向`data`这棵树。
+
+![Tree graph for the a1 commit](images/1-a1-tree-graph.png)
+
+上图中，`root`树指向了`data`树，而`data`树指向了`data/letter.txt`和`data/number.txt`这两个blob。
+
 #### 创建提交对象
 
 #### 将当前分支指向新提交
