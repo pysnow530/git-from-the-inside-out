@@ -1,6 +1,6 @@
 Translated from <http://maryrosecook.com/blog/post/git-from-the-inside-out>.
 
-## git内部实现原理
+## 彻底理解Git
 
 本文主要解释git的工作原理。如果你是一个视频党，请移步[youtube视频](https://www.youtube.com/watch?v=fCtZWGhQBvo)。
 
@@ -88,6 +88,13 @@ Translated from <http://maryrosecook.com/blog/post/git-from-the-inside-out>.
 我们原打算在`data/number.txt`内写入`1`而不是刚才的`1234`，现在修正一下，然后将文件重新加到index。这条命令会为新的内容重新生成一个新的blob文件，并更新`data/number.txt`在index中的指向。
 
 ### 创建提交
+
+    ~/alpha $ git commit -m 'a1'
+              [master (root-commit) 774b54a] a1
+              
+我们创建了一个提交`a1`。Git打印出此次提交的简短描述。
+
+提交命令对应三步操作。创建提交版本对应的文件内容的树图，创建一个提交对象，然后将当前分支指向该提交。
 
 #### 创建树图
 
