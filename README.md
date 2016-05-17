@@ -14,7 +14,7 @@ Translated from <http://maryrosecook.com/blog/post/git-from-the-inside-out>.
 
     ~ $ mkdir alpha
     ~ $ cd alpha
-    
+
 创建项目目录`alpha`。
 
     ~/alpha $ mkdir data
@@ -154,7 +154,7 @@ tree是在创建提交时产生的，一个tree代表着工作区的一个目录
 代表`master`引用的文件还不存在，因为这是我们在该仓库的第一个提交。不过不用担心，Git会创建该文件`.git/refs/heads/master`并写入提交对象的哈希值：
 
     74ac3ad9cde0b265d2b4f1c778b283a6e2ffbafd
-    
+
 注意：如果你是跟着本文边读边敲，你的`a1`提交生成的哈希值会跟上值不同。像blob和tree这样以内容计算哈希的对象，它们的哈希值与本文相同。提交不然，因为它的哈希值包含了日期和提交作者的信息。
 
 现在把`HEAD`和`master`加到图里：
@@ -178,14 +178,14 @@ tree是在创建提交时产生的，一个tree代表着工作区的一个目录
 ![data/number.txt set to 2 in the working copy](images/5-a1-wc-number-set-to-2.png)
 
     ~/alpha $ git add data/number.txt
-    
+
 将文件添加到Git。此操作将在`objects`目录下添加一个内容为`2`的blob对象，然后将`data/number.txt`在index中的条目指向该对象。
 
 ![data/number.txt set to 2 in the working copy and index](images/6-a1-wc-and-index-number-set-to-2.png)
 
     ~/alpha $ git commit -m 'a2'
               [master f0af7e6] a2
-              
+
 提交此次修改。Git在这里做的操作跟之前第一次提交时相同。
 
 第一步，创建包含index中文件列表的树图。
@@ -198,14 +198,14 @@ tree是在创建提交时产生的，一个tree代表着工作区的一个目录
 新的`data`树跟之前的`data`树具有不同的哈希值，为记录这一变化，新的`root`树会被创建：
 
     040000 tree 40b0318811470aaacc577485777d7a6780e51f0b data
-    
+
 第二步，一个新的commit对象会被创建。
 
     tree ce72afb5ff229a39f6cce47b00d1b0ed60fe3556
     parent 774b54a193d6cfdd081e581a007d2e11f784b9fe
     author Mary Rose Cook <mary@maryrosecook.com> 1424813101 -0500
     committer Mary Rose Cook <mary@maryrosecook.com> 1424813101 -0500
-    
+
     a2
 
 commit对象的第一行指向新的`root`树，第二行指向父提交`a1`。Git会查看`HEAD`，找到当前分支master，进而找到上个提交的哈希值。
@@ -237,6 +237,40 @@ commit对象的第一行指向新的`root`树，第二行指向父提交`a1`。G
 没有被ref指向的提交是很难找到的。在某个ref上的提交越多，之前的提交就越不容易被找到，但是谁又会关心很久之前的提交呢。
 
 ### 检出提交
+
+    ~/alpha $ git checkout 37888c2
+              You are in 'detached HEAD' state...
+
+使用`a2`的哈希值检出该提交。(此命令不能直接运行，请先使用`git log`找到`a2`在你自己仓库的哈希值。)
+
+检出操作分四步。
+
+第一步，Git找到`a2`提交指向的树图。
+
+第二步，将树图里对应的文件写到工作区。这一步不会产生任何变化。工作区的内容已经和树图保持一致了，因为我们的`HEAD`已经通过`master`指向`a2`提交了。
+
+第三步，将树图里对应的文件写到index。这一步也不会产生任何变化。index也已经跟树图的内容保持一致了。
+
+第四步，将`a2`的哈希值写入`HEAD`:
+
+    f0af7e62679e144bb28c627ee3e8f7bdb235eee9
+
+将`HEAD`内容设置为某个哈希值会导致仓库进入detached `HEAD`状态。注意下图中的`HEAD`，它直接指向`a2`提交，而不再指向`master`。
+
+![Detached HEAD on a2 commit](images/9-a2-detached-head.png)
+
+    ~/alpha $ printf '3' > data/number.txt
+    ~/alpha $ git add data/number.txt
+    ~/alpha $ git commit -m 'a3'
+              [detached HEAD 3645a0e] a3
+
+将`data/number.txt`的内容修改为`3`并提交。Git查看`HEAD`来确定`a3`的父提交。它并没有发现分支，而是找到了`a2`的哈希值。
+
+Git将`HEAD`更新为`a3`的哈希值。此时仓库仍然处于detached `HEAD`状态，而并没有在一个分支上，因为没有ref指向`a3`或它之后的提交。这意味着它很容易丢失。
+
+从现在起，我们将在Git状态图里忽略tree和blob。
+
+![a3 commit that is not on a branch](images/10-a3-detached-head.png)
 
 ### 创建分支
 
