@@ -165,6 +165,77 @@ tree是在创建提交时产生的，一个tree代表着工作区的一个目录
 
 ### 创建第二个提交
 
+下图是提交`a1`后的Git状态图 (包含工作区和index)：
+
+![a1 commit shown with the working copy and index](images/4-a1-wc-and-index.png)
+
+值得一提的是，工作区、index和`a1`提交的`data/letter.txt`和`data/number.txt`的文件内容是一致的。index和`HEAD`都通过blob对象来获取文件内容，而在工作区，文件内容直接保存在文件里。
+
+    ~/alpha $ printf '2' > data/number.txt
+
+修改`data/number.txt`的内容为`2`。这个操作只修改了工作区，index和`HEAD`不变。
+
+![data/number.txt set to 2 in the working copy](images/5-a1-wc-number-set-to-2.png)
+
+    ~/alpha $ git add data/number.txt
+    
+将文件添加到Git。此操作将在`objects`目录下添加一个内容为`2`的blob对象，然后将`data/number.txt`在index中的条目指向该对象。
+
+![data/number.txt set to 2 in the working copy and index](images/6-a1-wc-and-index-number-set-to-2.png)
+
+    ~/alpha $ git commit -m 'a2'
+              [master f0af7e6] a2
+              
+提交此次修改。Git在这里做的操作跟之前第一次提交时相同。
+
+第一步，创建包含index中文件列表的树图。
+
+`data/number.txt`在index中的条目已经改变了，老的`data`树不能再反映`data`目录现在的状态了，此时一棵新的`data`树会被创建：
+
+    100664 blob 2e65efe2a145dda7ee51d1741299f848e5bf752e letter.txt
+    100664 blob d8263ee9860594d2806b0dfd1bfd17528b0ba2a4 number.txt
+
+新的`data`树跟之前的`data`树具有不同的哈希值，为记录这一变化，新的`root`树会被创建：
+
+    040000 tree 40b0318811470aaacc577485777d7a6780e51f0b data
+    
+第二步，一个新的commit对象会被创建。
+
+    tree ce72afb5ff229a39f6cce47b00d1b0ed60fe3556
+    parent 774b54a193d6cfdd081e581a007d2e11f784b9fe
+    author Mary Rose Cook <mary@maryrosecook.com> 1424813101 -0500
+    committer Mary Rose Cook <mary@maryrosecook.com> 1424813101 -0500
+    
+    a2
+
+commit对象的第一行指向新的`root`树，第二行指向父提交`a1`。Git会查看`HEAD`，找到当前分支master，进而找到上个提交的哈希值。
+
+第三步，将新提交的哈希值写入记录`master`分支的文件。
+
+![a2 commit](images/7-a2.png)
+
+![Git graph without the working copy and index](images/8-a2-just-objects-commits-and-refs.png)
+
+图属性：提交内容被保存为对象组成的树，这意味着对象数据库内只保存差异文件。看上图，`a2`提交重用了`a1`提交前生成的`a`blob。同样的，如果一个目录在提交前后没有变化，那么这个目录及其子目录的tree对象和blob对象都可以重用。通常，我们的单个提交只包含极少的变化，这意味着Git可以使用极少的磁盘空间保存大量提交历史。
+
+图属性：每个提交都有一个父提交，所以仓库可以记录项目提交历史。
+
+图属性：refs是某段提交历史的入口，我们可以给某个提交一个有意义的名字。用户将工作组织成不同版本线，并赋予有意义的refs，如`fix-for-bug-376`。Git使用符号链接来操作历史，如`HEAD`、`MERGE_HEAD`和`FETCH_HEAD`。
+
+图属性：`objects/`目录下的节点是不可变的，内容可以编辑，但不能删除。添加的文件和创建的提交都保存在`objects`目录下。
+
+图属性：refs是可变的。因此，一个分支的状态是可以修改的。`master`分支指向的提交可能是项目当前最好的版本，但它会被一个新的更好的提交取代。
+
+图属性：工作区和refs指向的提交可以被轻易访问到，访问其它提交会麻烦一点。最近的提交历史更容易被访问，但它们也是最经常被修改的。或者说，Git很健忘，需要我们不停的去鞭策。
+
+工作区是在提交历史里最容易找到，它就在仓库的根目录，并不需要执行Git命令。它也是提交历史中最经常被改变的，用户可以针对一个文件修改N个版本，但Git只在执行`add`时才会记录。
+
+`HEAD`指向的提交很容易找到，它就是检出分支的最近一个提交。执行`git statsh`命令后的工作区，即是它的内容。同时，`HEAD`也是最经常修改的ref。
+
+其它ref指向的提交也很容易找到，我们只要把它们检出就可以了。修改分支没有修改`HEAD`来得经常，但涉及到该分支所代表的功能，该分支也是要经常修改的。
+
+没有被ref指向的提交是很难找到的。在某个ref上的提交越多，之前的提交就越不容易被找到，但是谁又会关心很久之前的提交呢。
+
 ### 检出提交
 
 ### 创建分支
