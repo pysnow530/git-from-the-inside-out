@@ -274,6 +274,16 @@ Git将`HEAD`更新为`a3`的哈希值。此时仓库仍然处于detached `HEAD`�
 
 ### 创建分支
 
+    ~/alpha $ git branch deputy
+
+创建一个新分支`deputy`。该操作只是创建一个新文件`.git/refs/heads/deputy`，并把`HEAD`指向的`a3`提交的哈希值写入该文件。
+
+图属性：分支只是ref，而ref只是文件。这意味着Git的分支是很轻量的。
+
+创建`deputy`分支使得`a3`附属到了该分支上，`a3`现在已经安全了。`HEAD`仍然处于detached状态，因为它仍直接指向一个提交。
+
+![a3 commit now on the deputy branch](images/11-a3-on-deputy.png)
+
 ### 检出分支
 
 ### 检出与工作区不兼容的分支
