@@ -331,7 +331,14 @@ Git也可以把要检出的文件内容合并到工作区，但这要复杂的�
 
 ![deputy checked out](images/13-a3ondeputy.png)
 
-### 合并祖先提交
+### 合并之前的提交
+
+    ~/alpha $ git merge master
+              Already up-to-date.
+
+将`master`合并到`deputy`。合并两个分支意味着合并他们的提交。`deputy`指向的提交是接收方。`master`指向的提交是提供方。Git不会对本次合并做任何操作，只是提示`Already up-to-date.`。
+
+图属性：这一系列的提交被解释为对仓库内容的一系列更改。这意味着，如果提供方是接收方之前的提交，Git将不会做合并操作。这些修改已经被合并过了。
 
 ### 合并子孙提交
 
