@@ -347,7 +347,7 @@ Git也可以把要检出的文件内容合并到工作区，但这要复杂的�
 
 检出`master`。
 
-![master checked out and pointing at the a2 commit](images/13-a3ondeputy.png)
+![master checked out and pointing at the a2 commit](images/14-a3-on-master-on-a2.png)
 
     ~/alpha $ git merge deputy
               Fast-forward
