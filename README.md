@@ -8,7 +8,7 @@ Translated from <http://maryrosecook.com/blog/post/git-from-the-inside-out>.
 
 本文结构组织为一系列的git动作，针对一个单独的项目展开。我们偶尔会观察一下git当前状态的图结构，并解释图属性及其产生的行为。
 
-如果你读完本文后仍意犹未尽，可以看一下[我对Git的JavaScript实现](http://gitlet.maryrosecook.com/docs/gitlet.html) (包含大量注释) 。
+如果你读完本文后仍意犹未尽，可以看一下[maryrosecook对Git的JavaScript实现](http://gitlet.maryrosecook.com/docs/gitlet.html) ，里面包含了大量注释。
 
 ### 创建项目
 
