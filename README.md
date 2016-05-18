@@ -303,7 +303,31 @@ Git将`HEAD`更新为`a3`的哈希值。此时仓库仍然处于detached `HEAD`�
 
 ![master checked out and pointing at the a2 commit](images/12-a3-on-master-on-a2.png)
 
-### 检出与工作区不兼容的分支
+### 检出与工作区有冲突的分支
+
+    ~/alpha $ printf '789' > data/number.txt
+    ~/alpha $ git checkout deputy
+              Your changes to these files would be overwritten
+              by checkout:
+                data/number.txt
+              Commit your changes or stash them before you
+              switch branches.
+
+用户小手一抖，将`data/number.txt`文件的内容改成了`789`，然后试图检出`deputy`。Git阻止了这场血案。
+
+`HEAD`指向`master`，`master`指向`a2`，`data/number.txt`文件在`a2`提交时的内容是`2`。`deputy`指向`a3`，该文件在`a3`提交时的内容是`3`。而在工作区中，该文件内容是`789`。这些版本的文件内容都不相同，我们必须先解决这些差异。
+
+Git当然可以使用要检出的文件内容替换工作区的文件内容，但这样会导致文件内容的丢失。
+
+Git也可以把要检出的文件内容合并到工作区，但这要复杂的多。
+
+所以Git终止了检出操作。
+
+    ~/alpha $ printf '2' > data/number.txt
+    ~/alpha $ git checkout deputy
+              Switched to branch 'deputy'
+
+现在我们意识到了这次失误，将文件改回原内容。现在可以成功检出`deputy`了。
 
 ### 合并祖先提交
 
