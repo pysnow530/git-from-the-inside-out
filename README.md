@@ -360,9 +360,78 @@ Git获取提供方的提交和它指向的树图，将树图的文件写入工�
 
 **图属性**：这一系列的提交被解释为对仓库内容的一系列更改。这意味着，如果提供方是接收方的子提交，提交历史是不会改变的，因为已经存在一段提交来描述接受方和提供方之间的变化。但是Git的状态图是会改变的。`HEAD`指向的`ref`会更新为提供方的提交。
 
-### 合并来自不同提交线的两个提交
+### 合并不同提交线的两个提交
 
-### 合并来自不同提交线且有相同修改文件的两个提交
+    ~/alpha $ printf '4' > data/number.txt
+    ~/alpha $ git add data/number.txt
+    ~/alpha $ git commit -m 'a4'
+              [master 7b7bd9a] a4
+
+将`data/number.txt`内容修改为`4`，然后提交。
+
+    ~/alpha $ git checkout deputy
+              Switched to branch 'deputy'
+              ~/alpha $ printf 'b' > data/letter.txt
+              ~/alpha $ git add data/letter.txt
+              ~/alpha $ git commit -m 'b3'
+                        [deputy 982dffb] b3
+
+检出到`deputy`，将`data/letter.txt`内容修改为`b`，然后提交。
+
+![a4 committed to master, b3 committed to deputy and deputy checked out](images/16-a4-b3-on-deputy.png)
+
+**图属性**：多个提交可以共用一个父提交，这意味着我们可以在提交历史里创建新的提交线。
+
+**图属性**：一个提交可以有多个父提交，这意味着我们可以通过创建一个合并提交来合并两个不同的提交线。
+
+    ~/alpha $ git merge master -m 'b4'
+              Merge made by the 'recursive' strategy.
+
+合并`master`到`deputy`。
+
+Git发现目的提交`b3`和源提交`a4`在两个不同的提交线上，它创建了一个合并提交。这个过程总共分8步。
+
+第一步，Git将源提交的哈希值写入文件`alpha/.git/MERGE_HEAD`。若此文件存在，说明Git正在做合并操作。
+
+第二步，Git查找源提交和目的提交的最近一个公共父提交，即基提交。
+
+![a3, the base commit of a4 and b3](images/17-a4-b3-on-deputy.png)
+
+**图属性**：一个提交有父提交。这意味着我们可以发现两个提交线分开自哪个提交。Git向后查找`b3`和`a4`的所有父提交，发现了最近的公共父提交`a3`。这正是他们的基提交。
+
+第三步，Git为基提交、源提交和目的提交创建索引。
+
+第四步，Git为创建源提交和目的提交相对于基提交的差异，此处的差异是一个列表，每一个条目由文件路径以及文件状态组成。其中，状态包括：添加、移除、修改、冲突。
+
+Git获取基提交、源提交和目的提交的文件列表，然后针对每一个文件，通过对比index来判断它的状态。Git将文件列表及状态写入差异。在我们的例子中，差异包含两个条目。
+
+第一个条目记录`data/letter.txt`的状态。在基提交、目的提交和源提交中，该文件内容分别是`a`、`b`和`a`。文件内容在基提交和目的提交不同，但在基提交和源提交相同。Git发现文件内容被目的提交修改了，而没有被源提交修改。记录`data/letter.txt`的条目的状态是修改，而不是冲突。
+
+第二个条目记录`data/number.txt`的状态。在我们的例子中，该文件内容在基提交和目的提交相同，但在基提交和源提交不同。这个条目的状态也是修改。
+
+**图属性**：发现一个合并操作的基提交是可能的。这意味着，如果基提交中的一个文件只在源提交或目的提交做了修改，Git可以自动合并该文件，这样就减少了用户的工作量。
+
+第五步，将差异中的条目更新到工作区。`data/letter.txt`内容被修改为`b`，`data/number.txt`内容被修改为`4`。
+
+第六步，将差异中的条目更新到index。`data/letter.txt`会指向内容为`b`的blob，`data/number.txt`会指向内容为`4`的blob。
+
+第七步，提交更新后的index：
+
+    tree 20294508aea3fb6f05fcc49adaecc2e6d60f7e7d
+    parent 982dffb20f8d6a25a8554cc8d765fb9f3ff1333b
+    parent 7b7bd9a5253f47360d5787095afc5ba56591bfe7
+    author Mary Rose Cook <mary@maryrosecook.com> 1425596551 -0500
+    committer Mary Rose Cook <mary@maryrosecook.com> 1425596551 -0500
+    
+    b4
+
+注意，这个提交有两个父提交。
+
+第八步，Git将当前分支`deputy`指向新创建的提交。
+
+![b4, the merge commit resulting from the recursive merge of a4 into b3](images/18-b4-on-deputy.png)
+
+### 合并不同提交线且有相同修改文件的两个提交
 
 ### 移除文件
 
