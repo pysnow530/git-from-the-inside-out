@@ -336,9 +336,9 @@ Git也可以把要检出的文件内容合并到工作区，但这要复杂的�
     ~/alpha $ git merge master
               Already up-to-date.
 
-将`master`合并到`deputy`。合并两个分支意味着合并他们的提交。`deputy`指向的提交是接收方。`master`指向的提交是提供方。Git不会对本次合并做任何操作，只是提示`Already up-to-date.`。
+将`master`合并到`deputy`。合并两个分支意味着合并他们的提交。`deputy`指向目的提交，`master`指向源提交。Git不会对本次合并做任何操作，只是提示`Already up-to-date.`。
 
-**图属性**：这一系列的提交被解释为对仓库内容的一系列更改。这意味着，如果提供方是接收方的父提交，Git将不会做合并操作。这些修改已经被合并过了。
+**图属性**：一系列的提交被解释为对仓库内容的一系列更改。这意味着，如果源提交是目的提交的父提交，Git将不会做合并操作。这些修改已经被合并过了。
 
 ### 合并子提交
 
@@ -352,13 +352,13 @@ Git也可以把要检出的文件内容合并到工作区，但这要复杂的�
     ~/alpha $ git merge deputy
               Fast-forward
 
-将`deputy`合并到`master`。Git发现接受方`a2`是提供方`a3`的父提交。Git使用了fast-forward合并。
+将`deputy`合并到`master`。Git发现目的提交`a2`是源提交`a3`的父提交。Git使用了fast-forward合并。
 
-Git获取提供方的提交和它指向的树图，将树图的文件写入工作区和index。然后使用"fast-forward"技术将`master`指向`a3`。
+Git获取源提交和它指向的树图，将树图的文件写入工作区和index。然后使用"fast-forward"技术将`master`指向`a3`。
 
 ![a3 commit from deputy fast-forward merged into master](images/15-a3-on-master.png)
 
-**图属性**：这一系列的提交被解释为对仓库内容的一系列更改。这意味着，如果提供方是接收方的子提交，提交历史是不会改变的，因为已经存在一段提交来描述接受方和提供方之间的变化。但是Git的状态图是会改变的。`HEAD`指向的`ref`会更新为提供方的提交。
+**图属性**：这一系列的提交被解释为对仓库内容的一系列更改。这意味着，如果源提交是目的提交的子提交，提交历史是不会改变的，因为已经存在一段提交来描述目的提交和源提交之间的变化。但是Git的状态图是会改变的。`HEAD`指向的`ref`会更新为源提交。
 
 ### 合并不同提交线的两个提交
 
