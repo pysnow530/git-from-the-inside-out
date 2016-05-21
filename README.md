@@ -561,7 +561,17 @@ stage `0`的`data/letter.txt`项跟合并前一样。stage `0`的`data/number.tx
 
 ![New graph created when alpha cped to bravo](images/26-11-cp-alpha-to-bravo.png)
 
-### 把仓库关联到其它仓库
+### 关联其它仓库
+
+          ~ $ cd alpha
+    ~/alpha $ git remote add bravo ../bravo
+
+回到`alpha`仓库，将`bravo`设置为`alpha`仓库的远程仓库。该操作将在`alpha/.git/config`添加几行内容：
+
+    [remote "bravo"]
+        url = ../bravo/
+
+这两行说明，存在一个远程仓库`bravo`，该仓库位于`../bravo`目录。
 
 ### 从远程仓库取回分支
 
