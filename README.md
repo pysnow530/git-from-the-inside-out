@@ -544,6 +544,23 @@ stage `0`的`data/letter.txt`项跟合并前一样。stage `0`的`data/number.tx
 
 ### 拷贝仓库
 
+    ~/alpha $ cd ..
+          ~ $ cp -R alpha bravo
+
+将`alpha/`拷贝到`bravo/`。此时将出现下面的目录结构：
+
+    ~
+    ├── alpha
+    │   └── data
+    │       └── number.txt
+    └── bravo
+        └── data
+            └── number.txt
+
+现在`bravo`目录存在另一个Git状态图：
+
+![New graph created when alpha cped to bravo](images/26-11-cp-alpha-to-bravo.png)
+
 ### 把仓库关联到其它仓库
 
 ### 从远程仓库取回分支
