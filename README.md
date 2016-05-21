@@ -524,6 +524,24 @@ stage `0`的`data/letter.txt`项跟合并前一样。stage `0`的`data/number.tx
 
 ### 移除文件
 
+下图是当前Git的状态图，其中包含了提交历史、最后提交的tree和blob、工作区以及index：
+
+![The working copy, index, b11 commit and its tree graph](images/23-b11-with-objects-wc-and-index.png)
+
+    ~/alpha $ git rm data/letter.txt
+              rm 'data/letter.txt'
+
+使用Git移除`data/letter.txt`。Git将文件从工作区和index删除。
+
+![After data/letter.txt rmed from working copy and index](images/24-b11-letter-removed-from-wc-and-index.png)
+
+    ~/alpha $ git commit -m '11'
+              [master d14c7d2] 11
+
+提交变更。按照惯例，Git为index创建一个树图。该树图不包含`data/letter.txt`，因为它已经从index删除了。
+
+![11 commit made after data/letter.txt rmed](images/25-11.png)
+
 ### 拷贝仓库
 
 ### 把仓库关联到其它仓库
