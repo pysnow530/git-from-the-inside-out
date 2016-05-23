@@ -613,6 +613,14 @@ stage `0`的`data/letter.txt`项跟合并前一样。stage `0`的`data/number.tx
 
 ### 合并FETCH_HEAD
 
+    ~/alpha $ git merge FETCH_HEAD
+              Updating d14c7d2..94cd04d
+              Fast-forward
+
+合并`FETCH_HEAD`。`FETCH_HEAD`只是另一个ref，它解析到待合并提交`12`。`HEAD`指向目的提交`11`。Git使用fast-forward合并将`master`指向`12`提交。
+
+![alpha after FETCH_HEAD merged](images/29-12-merged-to-alpha.png)
+
 ### 从远程仓库取回并合并分支
 
 ### 克隆仓库
