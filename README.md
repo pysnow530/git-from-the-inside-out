@@ -573,7 +573,43 @@ stage `0`的`data/letter.txt`项跟合并前一样。stage `0`的`data/number.tx
 
 这两行说明，存在一个远程仓库`bravo`，该仓库位于`../bravo`目录。
 
-### 从远程仓库取回分支
+### 从远程仓库获取分支
+
+    ~/alpha $ cd ../bravo
+    ~/bravo $ printf '12' > data/number.txt
+    ~/bravo $ git add data/number.txt
+    ~/bravo $ git commit -m '12'
+              [master 94cd04d] 12
+
+进入`bravo`仓库，将`data/number.txt`内容修改为`12`并提交到`master`。
+
+![12 commit on bravo repository](images/27-12-bravo.png)
+
+    ~/bravo $ cd ../alpha
+    ~/alpha $ git fetch bravo master
+              Unpacking objects: 100%
+              From ../bravo
+                * branch master -> FETCH_HEAD
+
+进入`alpha`仓库，将`bravo`的`master`分支取回到`alpha`。该操作分四步。
+
+第一步，Git获取`bravo`仓库中`master`指向提交的哈希值，也就是提交`12`的哈希值。
+
+第二步，Git创建一个包含了`12`提交依赖的所有对象的列表，包括提交对象本身、树图内的所有对象、提交的父对象及父对象对应树图内的所有对象。它将已存在`alpha`对象数据库的对象从列表中移除。然后将列表的对象拷贝到`alpha/.git/objects/`。
+
+第三步，将ref文件`alpha/.git/refs/remotes/bravo/master`的内容更新为提交`12`的哈希值。
+
+第四步，`alpha/.git/FETCH_HEAD`的内容设置为：
+
+    94cd04d93ae88a1f53a4646532b1e8cdfbc0977f branch 'master' of ../bravo
+
+这表示最近一次执行fetch命令获取的是`bravo`的`master`分支的提交`12`。
+
+![alpha after bravo/master fetched](images/28-12-fetched-to-alpha.png)
+
+**图属性**：对象可以被拷贝。这意味着提交历史可以被不同仓库共享。
+
+**图属性**：仓库可以保存远程分支的ref，如`alpha/.git/refs/remotes/bravo/master`。这意味着仓库可以将远程仓库的分支状态记录到本地。在获取该分支时，它将会被修正，但如果远程分支修改了，它就会过期。
 
 ### 合并FETCH_HEAD
 
