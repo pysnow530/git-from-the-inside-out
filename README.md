@@ -4,9 +4,9 @@ Translated from <http://maryrosecook.com/blog/post/git-from-the-inside-out>.
 
 本文主要解释git的工作原理。如果你是一个视频党，请移步[youtube视频](https://www.youtube.com/watch?v=fCtZWGhQBvo)。
 
-本文假设你已经有能力使用git来对项目做版本控制。我们主要考察支撑git的图结构和指导git行为的图属性。在考察原理时，我们会创建真实的状态模型，而不是通过各种实验的结果妄做猜想。通过这个真实的状态模型，我们可以更直观地了解git已经做了什么，正在做什么，以及接下来要做什么。
+本文假设你已经了解Git，并可以使用它来对项目做版本控制。我们主要考察支撑Git的图结构和指导Git行为的图属性。在考察原理时，我们会创建真实的状态模型，而不是通过各种实验的结果妄做猜想。通过这个真实的状态模型，我们可以更直观地了解git已经做了什么，正在做什么，以及接下来要做什么。
 
-本文结构组织为一系列的git动作，针对一个单独的项目展开。我们偶尔会观察一下git当前状态的图结构，并解释图属性及其产生的行为。
+本文结构组织为一系列的Git命令，针对一个单独的项目展开。在关键的地方，我们会观察Git当前状态的图结构，并解释图属性及其产生的行为。
 
 如果你读完本文后仍意犹未尽，可以看一下[maryrosecook对Git的JavaScript实现](http://gitlet.maryrosecook.com/docs/gitlet.html) ，里面包含了大量注释。
 
@@ -20,7 +20,7 @@ Translated from <http://maryrosecook.com/blog/post/git-from-the-inside-out>.
     ~/alpha $ mkdir data
     ~/alpha $ printf 'a' > data/letter.txt
 
-进入`alpha`目录，创建目录`data`。在`data`目录下，创建内容为`a`的文件`letter.txt`。终了，`alpha`的目录结构如下：
+进入`alpha`目录，创建目录`data`。在`data`目录下，创建内容为`a`的文件`letter.txt`。现在，`alpha`的目录结构如下：
 
     alpha
     └── data
@@ -31,7 +31,7 @@ Translated from <http://maryrosecook.com/blog/post/git-from-the-inside-out>.
     ~/alpha $ git init
     Initialized empty Git repository
 
-`git init`命令将当前目录加到Git仓库。为此，它会在当前目录下创建一个`.git`目录并写入一些文件。这些文件记录了Git配置和版本历史的所有东西。它们都是一些普通的文件，没什么特别。用户可以使用编辑器或shell对它们进行浏览或编辑。也就是说，用户可以像编辑他们的项目文件一样来浏览或编辑项目的版本历史。
+`git init`命令将当前目录添加到Git仓库。为此，它会在当前目录下创建一个`.git`目录并写入一批文件。这些文件记录了Git配置和版本历史的所有信息。它们都是一些普通的文件，并没什么特别。用户可以使用编辑器或shell命令对它们进行浏览或编辑。也就是说，用户可以像编辑他们的项目文件一样来浏览或编辑项目的版本历史。
 
 现在，`alpha`的目录结构变成了这个样子：
 
@@ -42,21 +42,21 @@ Translated from <http://maryrosecook.com/blog/post/git-from-the-inside-out>.
         ├── objects
         etc...
 
-`.git`目录及内容是由Git创建的。其它文件组成工作区，由用户创建。
+`.git`目录和它的内容是由Git创建的。其它文件组成了工作区，是由用户创建的。
 
 ### 添加文件
 
     ~/alpha $ git add data/letter.txt
 
-添加文件`data/letter.txt`到Git。此操作有两个影响。
+添加`data/letter.txt`文件到Git。该操作有两个影响。
 
 第一，它会在`.git/objects/`目录下创建一个新的blob文件。
 
-这个blob文件包含了`data/letter.txt`文件压缩后的内容。文件名取自内容的哈希值。哈希意味着执行一段算法，将给定内容转换为更小的，且能唯一确定原内容的值的过程。例如，Git对`a`作哈希得到`2e65efe2a145dda7ee51d1741299f848e5bf752e`。哈希值的头两个字符用作对象数据库的目录名：`.git/objects/2e/`，剩下的字符用作blob文件的文件名：`.git/objects/2e/65efe2a145dda7ee51d1741299f848e5bf752e`。
+这个blob文件包含了`data/letter.txt`文件压缩后的内容，文件名取自内容的哈希值。哈希意味着执行一段算法，将给定内容转换为更小的，且能唯一确定原内容的值的过程。例如，Git对`a`作哈希得到`2e65efe2a145dda7ee51d1741299f848e5bf752e`。哈希值的头两个字符用作对象数据库的目录名：`.git/objects/2e/`，剩下的字符用作blob文件的文件名：`.git/objects/2e/65efe2a145dda7ee51d1741299f848e5bf752e`。
 
-注意刚才添加文件时Git是如何把它的内容保存到`objects`目录的。即使我们从工作区把`data/letter.txt`文件删掉，它的内容在Git内仍然不会丢失。
+注意刚才添加文件时，Git将它的内容保存到`objects`目录的过程。即使我们从工作区把`data/letter.txt`文件删掉，它的内容仍然可以在Git中找回。
 
-第二，它会将`data/letter.txt`文件添加到index。index是一个文件列表，它记录有我们想要跟踪的所有文件。它保存为`.git/index`文件，每一行维护一个文件名到（添加到index时的）文件内容哈希值的映射。执行`git add`命令后的index如下：
+第二，它会将`data/letter.txt`文件添加到index。index是一个列表，它记录有我们想要跟踪的所有文件。该列表保存在`.git/index`文件内，每一行维护一个文件名到（添加到index时的）文件内容哈希值的映射。执行`git add`命令后的index如下：
 
     data/letter.txt 2e65efe2a145dda7ee51d1741299f848e5bf752e
 
@@ -64,58 +64,58 @@ Translated from <http://maryrosecook.com/blog/post/git-from-the-inside-out>.
 
     ~/alpha $ printf '1234' > data/number.txt
 
-现在工作区的目录结构：
+现在工作区的目录结构如下：
 
     alpha
     └── data
         ├── letter.txt
         └── number.txt
 
-将`data/number.txt`文件加入到Git。
+将`data/number.txt`添加到Git。
 
     ~/alpha $ git add data
 
-`git add`命令添加一个包含`data/number.txt`内容的blob对象，然后添加一个index项将`data/number.txt`指向刚刚创建的blob对象。执行完后的index：
+`git add`命令创建一个包含`data/number.txt`内容的blob对象，然后添加一个index项，将`data/number.txt`指向刚刚创建的blob对象。执行完后的index如下：
 
     data/letter.txt 2e65efe2a145dda7ee51d1741299f848e5bf752e
     data/number.txt 274c0052dd5408f8ae2bc8440029ff67d79bc5c3
 
-注意，虽然我们执行的是`git add data`，但只有`data`目录内的文件被加到index。`data`目录不会被加入。
+注意，虽然我们执行的是`git add data`，但只有`data`目录内的文件被加到index，`data`不会被加入。
 
     ~/alpha $ printf '1' > data/number.txt
     ~/alpha $ git add data
 
-我们原打算在`data/number.txt`内写入`1`而不是刚才的`1234`，现在修正一下，然后将文件重新加到index。这条命令会为新的内容重新生成一个新的blob文件，并更新`data/number.txt`在index中的指向。
+我们原打算在`data/number.txt`内写入`1`而不是刚才的`1234`，现在修正一下，然后将文件重新加到index。这条命令会为新的内容重新生成一个blob文件，并更新`data/number.txt`在index中的指向。
 
 ### 创建提交
 
     ~/alpha $ git commit -m 'a1'
               [master (root-commit) 774b54a] a1
 
-我们创建了一个提交`a1`。Git打印出此次提交的简短描述。
+创建一个提交`a1`。Git会打印出此次提交的简短描述。
 
-提交命令对应3步操作。创建提交版本对应的文件内容的树图，创建一个提交对象，然后将当前分支指向该提交。
+提交命令对应三个步骤。创建提交版本对应文件的树图（tree graph），创建一个提交对象，然后将当前分支指向该提交。
 
 #### 创建树图
 
 树图记录着index内对应文件 (即项目文件) 的位置和内容，Git通过树图来记录项目的当前状态。
 
-树图有两类对象组成：blob和tree。
+树图由两类对象组成：blob和tree。
 
 blob是在执行`git add`命令时创建的，用来保存项目文件的内容。
 
-tree是在创建提交时产生的，一个tree代表着工作区的一个目录。
+tree是在创建提交时产生的，一个tree对应工作区的一个目录。
 
-创建提交后，记录`data`目录内容的tree对象如下：
+创建提交后，对应`data`目录的tree如下：
 
     100664 blob 2e65efe2a145dda7ee51d1741299f848e5bf752e letter.txt
     100664 blob 56a6051ca2b02b04ef92d5150c9ef600403cb1de number.txt
 
-第一行记录了恢复`data/letter.txt`文件需要的所有信息。第一部分表示该文件的权限，第二部分表示该行记录的是一个blob对象，第三行表示该blob的哈希值，第四行表示文件名。
+第一行记录了恢复`data/letter.txt`文件需要的所有信息。第一部分表示该文件的权限，第二部分表示该行记录的是一个blob对象，第三部分表示该blob的哈希值，第四部分记录了文件名。
 
-第二行是`data/number.txt`文件的信息。
+第二行是`data/number.txt`的信息。
 
-下面是`alpha`目录 (项目的根目录) 的树对象：
+下面是对应`alpha`目录（项目根目录）的tree：
 
     040000 tree 0eed1217a2947f4930583229987d90fe5e8e0b74 data
 
@@ -123,7 +123,7 @@ tree是在创建提交时产生的，一个tree代表着工作区的一个目录
 
 ![Tree graph for the a1 commit](images/1-a1-tree-graph.png)
 
-上图中，`root`树指向了`data`树，而`data`树指向了`data/letter.txt`和`data/number.txt`这两个blob。
+上图中，`root` tree指向了`data`，而`data` tree指向了`data/letter.txt`和`data/number.txt`这两个blob。
 
 #### 创建提交对象
 
@@ -135,7 +135,7 @@ tree是在创建提交时产生的，一个tree代表着工作区的一个目录
 
     a1
 
-第一行指向一棵树。通过这里的哈希值，我们可以找到一个指向工作区根目录（即alpha目录）的tree对象。最后一行是提交信息。
+第一行指向一个tree对象。通过这里的哈希值，我们可以找到一个指向工作区根目录（即alpha目录）的tree对象。最后一行是提交信息。
 
 ![a1 commit object pointing at its tree graph](images/2-a1-commit.png)
 
@@ -149,15 +149,15 @@ tree是在创建提交时产生的，一个tree代表着工作区的一个目录
 
 好了，`HEAD`现在指向`master`，`master`就是我们的当前分支。
 
-`HEAD`和`master`都是引用。引用即一个标记，Git或用户通过它来找到某个提交。
+`HEAD`和`master`都是引用。引用是一个标记，Git或用户可以通过它找到某个提交。
 
 代表`master`引用的文件还不存在，因为这是我们在该仓库的第一个提交。不过不用担心，Git会创建该文件`.git/refs/heads/master`并写入提交对象的哈希值：
 
     74ac3ad9cde0b265d2b4f1c778b283a6e2ffbafd
 
-注意：如果你是跟着本文边读边敲，你的`a1`提交生成的哈希值会跟上值不同。像blob和tree这样以内容计算哈希的对象，它们的哈希值与本文相同。提交不然，因为它的哈希值包含了日期和提交作者的信息。
+注意：如果你跟着本文边读边敲，你的`a1`提交生成的哈希值会跟上值不同。像blob和tree这样以内容计算哈希的对象，它们的哈希值与本文相同。提交不然，因为它的哈希值包含了提交日期和作者的信息。
 
-现在把`HEAD`和`master`加到图里：
+现在把`HEAD`和`master`添加到我们的图里：
 
 ![HEAD pointing at master and master pointing at the a1 commit](images/3-a1-refs.png)
 
@@ -165,41 +165,41 @@ tree是在创建提交时产生的，一个tree代表着工作区的一个目录
 
 ### 创建第二个提交
 
-下图是提交`a1`后的Git状态图 (包含工作区和index)：
+    下图是提交`a1`后的Git状态图（包含工作区和index）：
 
 ![a1 commit shown with the working copy and index](images/4-a1-wc-and-index.png)
 
-值得一提的是，工作区、index和`a1`提交的`data/letter.txt`和`data/number.txt`的文件内容是一致的。index和`HEAD`都通过blob对象来获取文件内容，而在工作区，文件内容直接保存在文件里。
+注意，`data/letter.txt`和`data/number.txt`的内容在工作区、index和`a1`是一致的。index和`HEAD`都通过哈希值指向blob对象，而在工作区，内容直接保存在文件里。
 
     ~/alpha $ printf '2' > data/number.txt
 
-修改`data/number.txt`的内容为`2`。这个操作只修改了工作区，index和`HEAD`不变。
+将`data/number.txt`的内容更新为`2`。这个操作只修改了工作区，index和`HEAD`不变。
 
 ![data/number.txt set to 2 in the working copy](images/5-a1-wc-number-set-to-2.png)
 
     ~/alpha $ git add data/number.txt
 
-将文件添加到Git。此操作将在`objects`目录下添加一个内容为`2`的blob对象，然后将`data/number.txt`在index中的条目指向该对象。
+将文件添加到Git。此操作将在`objects`目录下添加一个内容为`2`的blob对象，然后将index中的`data/number.txt`项指向该blob对象。
 
 ![data/number.txt set to 2 in the working copy and index](images/6-a1-wc-and-index-number-set-to-2.png)
 
     ~/alpha $ git commit -m 'a2'
               [master f0af7e6] a2
 
-提交此次修改。Git在这里做的操作跟之前第一次提交时相同。
+提交此次变更。Git在这里做的操作跟之前第一次提交时相同。
 
-第1步，创建包含index中文件列表的树图。
+第一步，创建包含index文件列表的树图。
 
-`data/number.txt`在index中的条目已经改变了，老的`data`树不能再反映`data`目录现在的状态了，此时一棵新的`data`树会被创建：
+index中的`data/number.txt`项已经更新，老的`data` tree不能再反映`data`目录现在的状态了，此时一个新的`data` tree会被创建：
 
     100664 blob 2e65efe2a145dda7ee51d1741299f848e5bf752e letter.txt
     100664 blob d8263ee9860594d2806b0dfd1bfd17528b0ba2a4 number.txt
 
-新的`data`树跟之前的`data`树具有不同的哈希值，为记录这一变化，新的`root`树会被创建：
+新的`data` tree和之前的`data` tree有不同的哈希值，为记录这一变化，新的`root` tree被创建：
 
     040000 tree 40b0318811470aaacc577485777d7a6780e51f0b data
 
-第2步，一个新的commit对象会被创建。
+第二步，一个新的commit对象被创建。
 
     tree ce72afb5ff229a39f6cce47b00d1b0ed60fe3556
     parent 774b54a193d6cfdd081e581a007d2e11f784b9fe
@@ -208,50 +208,52 @@ tree是在创建提交时产生的，一个tree代表着工作区的一个目录
 
     a2
 
-commit对象的第一行指向新的`root`树，第二行指向父提交`a1`。Git会查看`HEAD`，找到当前分支master，进而找到上个提交的哈希值。
+commit对象的第一行指向新的`root` tree，第二行指向父提交`a1`。Git会查看`HEAD`，找到当前分支master，进而找到父提交的哈希值。
 
-第3步，将新提交的哈希值写入记录`master`分支的文件。
+第三步，新创建的提交的哈希值被写入记录`master`分支的文件。
 
 ![a2 commit](images/7-a2.png)
 
 ![Git graph without the working copy and index](images/8-a2-just-objects-commits-and-refs.png)
 
-**图属性**：提交内容被保存为对象组成的树，这意味着对象数据库内只保存差异文件。看上图，`a2`提交重用了`a1`提交前生成的`a`blob。同样的，如果一个目录在提交前后没有变化，那么这个目录及其子目录的tree对象和blob对象都可以重用。通常，我们的单个提交只包含极少的变化，这意味着Git可以使用极少的磁盘空间保存大量提交历史。
+**图属性**：项目内容被保存到blob和tree对象组成的树形结构里。这意味着只有变化的文件才被保存到对象数据库。看上图，`a2`重用了`a1`提交前生成的`a` blob。同样的，如果一个目录在提交前后没有变化，那么这个目录及其子目录的tree对象和blob对象都可以重用。通常，我们的单个提交只包含极少的变化文件，这意味着Git可以使用少量磁盘空间保存大量提交历史。
 
-**图属性**：每个提交都有一个父提交，所以仓库可以记录项目提交历史。
+**图属性**：每个提交都有一个父提交。这意味着仓库可以记录项目提交历史。
 
-**图属性**：refs是某段提交历史的入口，我们可以给某个提交一个有意义的名字。用户将工作组织成不同版本线，并赋予有意义的refs，如`fix-for-bug-376`。Git使用符号链接来操作历史，如`HEAD`、`MERGE_HEAD`和`FETCH_HEAD`。
+译者注：仓库的第一个提交是没有父提交的（或者说父提交为空）。
 
-**图属性**：`objects/`目录下的节点是不可变的，内容可以编辑，但不能删除。添加的文件和创建的提交都保存在`objects`目录下。
+**图属性**：ref是某段提交历史的入口。这意味着我们可以给某个提交一个有意义的名字。用户将工作组织成不同版本线，并赋予有意义的ref，如`fix-for-bug-376`。Git使用符号链接来操作提交历史，如`HEAD`、`MERGE_HEAD`和`FETCH_HEAD`。
 
-**图属性**：refs是可变的。因此，一个分支的状态是可以修改的。`master`分支指向的提交可能是项目当前最好的版本，但它会被一个新的更好的提交取代。
+**图属性**：`objects/`目录下的结点是不可变的。这意味着它的内容可以编辑，但不能删除。添加的文件内容和创建的提交都保存在`objects`目录下。
 
-**图属性**：工作区和refs指向的提交可以被轻易访问到，访问其它提交会麻烦一点。最近的提交历史更容易被访问，但它们也是最经常被修改的。或者说，Git很健忘，需要我们不停的去鞭策。
+**图属性**：ref是可变的。因此，一个分支的状态是可以修改的。`master`分支指向的提交可能是项目当前最好的版本，但它会被一个新的更好的提交取代。
 
-工作区是在提交历史里最容易找到，它就在仓库的根目录，并不需要执行Git命令。它也是提交历史中最经常被改变的，用户可以针对一个文件修改N个版本，但Git只在执行`add`时才会记录。
+**图属性**：工作区和ref指向的提交更容易被访问到，其它提交会麻烦一点。这意味着最近的提交历史更容易被访问，但它们更经常被修改。或者说，Git has a fading memory that must be jogged with increasingly vicious prods。
 
-`HEAD`指向的提交很容易找到，它就是检出分支的最近一个提交。执行`git statsh`命令后的工作区，即是它的内容。同时，`HEAD`也是最经常修改的ref。
+工作区是在历史里最容易找到的，它就在仓库的根目录，不需要执行Git命令。它也是在历史里我们最经常修改的，用户可以针对一个文件修改N个版本，但Git只记录执行`add`命令时的版本。
 
-其它ref指向的提交也很容易找到，我们只要把它们检出就可以了。修改分支没有修改`HEAD`来得经常，但涉及到该分支所代表的功能，该分支也是要经常修改的。
+`HEAD`指向的提交很容易找到，它就是当前分支的最近一个提交。执行`git statsh`命令后的工作区就是它的内容。同时，`HEAD`也是我们最经常修改的ref。
 
-没有被ref指向的提交是很难找到的。在某个ref上的提交越多，之前的提交就越不容易被找到，但是谁又会关心很久之前的提交呢。
+其它ref指向的提交也很容易找到，我们只要把它们检出就可以了。修改其它分支没有修改`HEAD`来得经常，但当修改其它分支涉及到的功能时，它们就会变得非常有用。
+
+没有被ref指向的提交是很难找到的。在某个ref上的提交越多，操作之前的提交就越不容易。但我们通常很少操作很久之前的提交。
 
 ### 检出提交
 
     ~/alpha $ git checkout 37888c2
               You are in 'detached HEAD' state...
 
-使用`a2`的哈希值检出该提交。(此命令不能直接运行，请先使用`git log`找到`a2`在你自己仓库的哈希值。)
+使用`a2`的哈希值检出该提交。(此命令不能直接运行，请先使用`git log`找到你仓库里`a2`的哈希值。)
 
-检出操作分4步。
+检出操作分四步。
 
-第1步，Git找到`a2`提交指向的树图。
+第一步，Git找到`a2`指向的树图。
 
-第2步，将树图里对应的文件写到工作区。这一步不会产生任何变化。工作区的内容已经和树图保持一致了，因为我们的`HEAD`已经通过`master`指向`a2`提交了。
+第二步，将树图里对应的文件写到工作区。这一步不会产生任何变化。工作区的内容已经和树图保持一致了，因为我们的`HEAD`之前就已经通过`master`指向`a2`提交了。
 
-第3步，将树图里对应的文件写到index。这一步也不会产生任何变化。index也已经跟树图的内容保持一致了。
+第三步，将树图里对应的文件写到index。这一步也不会产生任何变化。index也已经跟树图的内容保持一致了。
 
-第4步，将`a2`的哈希值写入`HEAD`:
+第四步，将`a2`的哈希值写入`HEAD`:
 
     f0af7e62679e144bb28c627ee3e8f7bdb235eee9
 
@@ -264,11 +266,11 @@ commit对象的第一行指向新的`root`树，第二行指向父提交`a1`。G
     ~/alpha $ git commit -m 'a3'
               [detached HEAD 3645a0e] a3
 
-将`data/number.txt`的内容修改为`3`并提交。Git查看`HEAD`来确定`a3`的父提交。它并没有发现分支，而是找到了`a2`的哈希值。
+将`data/number.txt`的内容修改为`3`，然后提交。Git查看`HEAD`来确定`a3`的父提交，它没有发现分支，而是找到了`a2`的哈希值。
 
-Git将`HEAD`更新为`a3`的哈希值。此时仓库仍然处于detached `HEAD`状态，而并没有在一个分支上，因为没有ref指向`a3`或它之后的提交。这意味着它很容易丢失。
+Git将`HEAD`更新为`a3`的哈希值。此时仓库仍然处于detached `HEAD`状态，而没有在一个分支上，因为没有ref指向`a3`或它之后的提交。这意味着它很容易丢失。
 
-从现在起，我们将在Git状态图里忽略tree和blob。
+从现在起，我们将在Git的状态图中忽略tree和blob。
 
 ![a3 commit that is not on a branch](images/10-a3-detached-head.png)
 
@@ -276,11 +278,11 @@ Git将`HEAD`更新为`a3`的哈希值。此时仓库仍然处于detached `HEAD`�
 
     ~/alpha $ git branch deputy
 
-创建一个新分支`deputy`。该操作只是创建一个新文件`.git/refs/heads/deputy`，并把`HEAD`指向的`a3`提交的哈希值写入该文件。
+创建一个新分支`deputy`。该操作只是创建一个新文件`.git/refs/heads/deputy`，并把`HEAD`指向的`a3`的哈希值写入该文件。
 
 **图属性**：分支只是ref，而ref只是文件。这意味着Git的分支是很轻量的。
 
-创建`deputy`分支使得`a3`附属到了该分支上，`a3`现在已经安全了。`HEAD`仍然处于detached状态，因为它仍直接指向一个提交。
+创建`deputy`分支使得`a3`附属到了该分支上，`a3`现在安全了。`HEAD`仍然处于detached状态，因为它仍直接指向一个提交。
 
 ![a3 commit now on the deputy branch](images/11-a3-on-deputy.png)
 
@@ -291,13 +293,13 @@ Git将`HEAD`更新为`a3`的哈希值。此时仓库仍然处于detached `HEAD`�
 
 检出`master`分支。
 
-第1步，Git会获取`master`指向的提交`a2`，根据`a2`获取该分支对应的树图。
+第一步，Git会获取`master`指向的提交`a2`，根据`a2`获取该分支指向的树图。
 
-第2步，Git将树图对应的文件写入工作区。此步会将`data/number.txt`的内容设置为`2`。
+第二步，Git将树图对应的文件写入工作区。此步会将`data/number.txt`的内容修改为`2`。
 
-第3步，Git将树图对应的文件写入index。此步会将index内的`data/number.txt`更新为`2`这个blob的哈希值。
+第三步，Git将树图对应的文件写入index。此步会将index内的`data/number.txt`更新为`2`这个blob的哈希值。
 
-第4步，Git将`HEAD`指向`master`，即将`HEAD`内容由哈希值改为：
+第四步，Git将`HEAD`指向`master`，即将`HEAD`内容由哈希值改为：
 
     ref: refs/heads/master
 
@@ -315,9 +317,9 @@ Git将`HEAD`更新为`a3`的哈希值。此时仓库仍然处于detached `HEAD`�
 
 用户小手一抖，将`data/number.txt`文件的内容改成了`789`，然后试图检出`deputy`。Git阻止了这场血案。
 
-`HEAD`指向`master`，`master`指向`a2`，`data/number.txt`文件在`a2`提交时的内容是`2`。`deputy`指向`a3`，该文件在`a3`提交时的内容是`3`。而在工作区中，该文件内容是`789`。这些版本的文件内容都不相同，我们必须先解决这些差异。
+`HEAD`通过`master`指向`a2`，`data/number.txt`在`a2`提交时的内容是`2`。`deputy`指向`a3`，该文件在`a3`提交时的内容是`3`。而在工作区中，该文件内容是`789`。这些版本的文件内容都不相同，我们必须先解决这些差异。
 
-Git当然可以使用要检出的文件内容替换工作区的文件内容，但这样会导致文件内容的丢失。
+Git可以使用要检出的文件内容替换工作区的文件内容，但这样会导致文件内容的丢失。
 
 Git也可以把要检出的文件内容合并到工作区，但这要复杂的多。
 
@@ -331,16 +333,16 @@ Git也可以把要检出的文件内容合并到工作区，但这要复杂的�
 
 ![deputy checked out](images/13-a3ondeputy.png)
 
-### 合并父提交
+### 合并祖先提交
 
     ~/alpha $ git merge master
               Already up-to-date.
 
-将`master`合并到`deputy`。合并两个分支意味着合并他们的提交。`deputy`指向目的提交，`master`指向源提交。Git不会对本次合并做任何操作，只是提示`Already up-to-date.`。
+将`master`合并到`deputy`。合并两个分支就是合并他们的提交。`deputy`指向合并的目的提交，`master`指向合并的源提交。Git不会对本次合并做任何操作，只是提示`Already up-to-date.`。
 
-**图属性**：一系列的提交被解释为对仓库内容的一系列更改。这意味着，如果源提交是目的提交的父提交，Git将不会做合并操作。这些修改已经被合并过了。
+**图属性**：提交序列被解释为对项目内容的一系列更改。这意味着，如果源提交是目的提交的祖先提交，Git将不会做合并操作。这些修改已经被合并过了。
 
-### 合并子提交
+### 合并后代提交
 
     ~/alpha $ git checkout master
               Switched to branch 'master'
@@ -352,13 +354,13 @@ Git也可以把要检出的文件内容合并到工作区，但这要复杂的�
     ~/alpha $ git merge deputy
               Fast-forward
 
-将`deputy`合并到`master`。Git发现目的提交`a2`是源提交`a3`的父提交。Git使用了fast-forward合并。
+将`deputy`合并到`master`。Git发现目的提交`a2`是源提交`a3`的祖先提交。Git使用了fast-forward合并。
 
-Git获取源提交和它指向的树图，将树图的文件写入工作区和index。然后使用"fast-forward"技术将`master`指向`a3`。
+Git获取源提交和它指向的树图，将树图中的文件写入工作区和index。然后使用"fast-forward"技术将`master`指向`a3`。
 
 ![a3 commit from deputy fast-forward merged into master](images/15-a3-on-master.png)
 
-**图属性**：这一系列的提交被解释为对仓库内容的一系列更改。这意味着，如果源提交是目的提交的子提交，提交历史是不会改变的，因为已经存在一段提交来描述目的提交和源提交之间的变化。但是Git的状态图是会改变的。`HEAD`指向的`ref`会更新为源提交。
+**图属性**：提交序列被解释为对仓库内容的一系列更改。这意味着，如果源提交是目的提交的后代提交，提交历史是不会改变的，因为已经存在一段提交来描述目的提交和源提交之间的变化。但是Git的状态图是会改变的。`HEAD`指向的`ref`会更新为源提交。
 
 ### 合并不同提交线的两个提交
 
@@ -389,33 +391,33 @@ Git获取源提交和它指向的树图，将树图的文件写入工作区和in
 
 合并`master`到`deputy`。
 
-Git发现目的提交`b3`和源提交`a4`在两个不同的提交线上，它创建了一个合并提交。这个过程总共分8步。
+Git发现目的提交`b3`和源提交`a4`在两个不同的提交线上，它创建了一个合并提交。这个过程总共分八步。
 
-第1步，Git将源提交的哈希值写入文件`alpha/.git/MERGE_HEAD`。若此文件存在，说明Git正在做合并操作。
+第一步，Git将源提交的哈希值写入文件`alpha/.git/MERGE_HEAD`。若此文件存在，说明Git正在做合并操作。
 
-第2步，Git查找源提交和目的提交的最近一个公共父提交，即基提交。
+第二步，Git查找源提交和目的提交的最近一个公共父提交，即基提交。
 
 ![a3, the base commit of a4 and b3](images/17-a4-b3-on-deputy.png)
 
-**图属性**：一个提交有父提交。这意味着我们可以发现两个提交线分开自哪个提交。Git向后查找`b3`和`a4`的所有父提交，发现了最近的公共父提交`a3`。这正是他们的基提交。
+**图属性**：每个提交都有一个父提交。这意味着我们可以发现两个提交线分开自哪个提交。Git查找`b3`和`a4`的所有祖先提交，发现了最近的公共父提交`a3`。这正是他们的基提交。
 
-第3步，Git为基提交、源提交和目的提交创建索引。
+第三步，Git为基提交、源提交和目的提交创建索引。
 
-第4步，Git为创建源提交和目的提交相对于基提交的差异，此处的差异是一个列表，每一个条目由文件路径以及文件状态组成。其中，状态包括：添加、移除、修改、冲突。
+第四步，Git创建源提交和目的提交相对于基提交的差异，此处的差异是一个列表，每一项由文件路径以及文件状态组成。状态包括：添加、移除、修改、冲突。
 
-Git获取基提交、源提交和目的提交的文件列表，然后针对每一个文件，通过对比index来判断它的状态。Git将文件列表及状态写入差异。在我们的例子中，差异包含两个条目。
+Git获取基提交、源提交和目的提交的文件列表，然后针对每一个文件，通过对比index来判断它的状态。Git将文件列表及状态写入差异列表。在我们的例子中，差异包含两个条目。
 
-第一个条目记录`data/letter.txt`的状态。在基提交、目的提交和源提交中，该文件内容分别是`a`、`b`和`a`。文件内容在基提交和目的提交不同，但在基提交和源提交相同。Git发现文件内容被目的提交修改了，而没有被源提交修改。记录`data/letter.txt`的条目的状态是修改，而不是冲突。
+第一项记录`data/letter.txt`的状态。在基提交、目的提交和源提交中，该文件内容分别是`a`、`b`和`a`。文件内容在基提交和目的提交不同，但在基提交和源提交相同。Git发现文件内容被目的提交修改了，而在源提交中没有被修改。所以`data/letter.txt`项的状态是修改，而不是冲突。
 
-第二个条目记录`data/number.txt`的状态。在我们的例子中，该文件内容在基提交和目的提交相同，但在基提交和源提交不同。这个条目的状态也是修改。
+第二项记录`data/number.txt`的状态。在我们的例子中，该文件内容在基提交和目的提交相同，但在基提交和源提交不同。这个条目的状态也是修改。
 
-**图属性**：发现一个合并操作的基提交是可能的。这意味着，如果基提交中的一个文件只在源提交或目的提交做了修改，Git可以自动合并该文件，这样就减少了用户的工作量。
+**图属性**：查找一个合并操作的基提交是可行的。这意味着，如果基提交中的一个文件只在源提交或目的提交做了修改，Git可以自动合并该文件，这样就减少了用户的工作量。
 
-第5步，将差异中的条目更新到工作区。`data/letter.txt`内容被修改为`b`，`data/number.txt`内容被修改为`4`。
+第五步，Git将差异中的项更新到工作区。`data/letter.txt`内容被修改为`b`，`data/number.txt`内容被修改为`4`。
 
-第6步，将差异中的条目更新到index。`data/letter.txt`会指向内容为`b`的blob，`data/number.txt`会指向内容为`4`的blob。
+第六步，Git将差异中的项更新到index。`data/letter.txt`会指向内容为`b`的blob，`data/number.txt`会指向内容为`4`的blob。
 
-第7步，提交更新后的index：
+第七步，更新后的index被提交：
 
     tree 20294508aea3fb6f05fcc49adaecc2e6d60f7e7d
     parent 982dffb20f8d6a25a8554cc8d765fb9f3ff1333b
@@ -427,7 +429,7 @@ Git获取基提交、源提交和目的提交的文件列表，然后针对每�
 
 注意，这个提交有两个父提交。
 
-第8步，Git将当前分支`deputy`指向新创建的提交。
+第八步，Git将当前分支`deputy`指向新创建的提交。
 
 ![b4, the merge commit resulting from the recursive merge of a4 into b3](images/18-b4-on-deputy.png)
 
@@ -467,21 +469,21 @@ Git获取基提交、源提交和目的提交的文件列表，然后针对每�
               Automatic merge failed; fix conflicts and
               commit the result.
 
-将`deputy`合并到`master`。合并因出现冲突中止。有冲突的合并执行操作的前6步跟没有冲突的合并是相同的：写入`.git/MERGE_HEAD`，查找基提交，创建基提交、目的提交和源提交的索引，生成差异，更新工作区，更新index。由于发生了冲突，第7步（创建提交）和第8步（更新ref）不再执行。让我再来看看这些步骤，看到底发生了什么。
+将`deputy`合并到`master`。合并因冲突中止。对于有冲突的合并操作，执行步骤的前六步跟没有冲突的合并是相同的：写入`.git/MERGE_HEAD`，查找基提交，创建基提交、目的提交和源提交的索引，生成差异，更新工作区，更新index。由于发生了冲突，第七步（创建提交）和第八步（更新ref）不再执行。让我们再来看看这些步骤，观察到底发生了什么。
 
-第1步，Git将源提交的哈希值写入`.git/MERGE_HEAD`。
+第一步，Git将源提交的哈希值写入`.git/MERGE_HEAD`。
 
 ![MERGE_HEAD written during merge of b5 into b6](images/21-b6-on-master-with-merge-head.png)
 
-第2步，Git查找到基提交`b4`。
+第二步，Git查找到基提交`b4`。
 
-第3步，Git创建基提交、目的提交和源提交的索引。
+第三步，Git创建基提交、目的提交和源提交的索引。
 
-第4步，Git生成目的提交和源提交相对于基提交的差异列表，每一项包含文件路径和该文件的状态：添加、移除、修改或冲突。
+第四步，Git生成目的提交和源提交相对于基提交的差异列表，每一项包含文件路径和该文件的状态：添加、移除、修改或冲突。
 
-在本例中，差异列表仅包含一项：`data/number.txt`。由于它的内容在源提交和目的提交中都是有变化的（相对于基提交），它的状态被标为冲突。
+在本例中，差异列表仅包含一项：`data/number.txt`。由于它的内容在源提交和目的提交中都是变化的（相对于基提交），它的状态被标为冲突。
 
-第5步，差异列表中的文件被写入工作区。对于冲突的部分，Git会将两个版本都写入工作区。`data/number.txt`的内容变为：
+第五步，差异列表中的文件被写入工作区。对于冲突的部分，Git将两个版本都写入工作区。`data/number.txt`的内容变为：
 
     <<<<<<< HEAD
     6
@@ -489,7 +491,7 @@ Git获取基提交、源提交和目的提交的文件列表，然后针对每�
     5
     >>>>>>> deputy
 
-第6步，差异列表中的文件被写入index。index中的项被文件路径和stage的组合唯一标识。没有冲突的项stage为0。在本次合并前，index看起来像下面的样子（标有0的一列是stage）：
+第六步，差异列表中的文件被写入index。index中的项被文件路径和stage的组合唯一标识。没有冲突的项stage为0。在本次合并前，index看起来像下面的样子（标有0的一列是stage）：
 
     0 data/letter.txt 63d8dbd40c23542e740659a7168a0ce3138ea748
     0 data/number.txt 62f9457511f879886bb7728c986fe10b0ece6bcb
@@ -508,7 +510,7 @@ stage `0`的`data/letter.txt`项跟合并前一样。stage `0`的`data/number.tx
     ~/alpha $ printf '11' > data/number.txt
     ~/alpha $ git add data/number.txt
 
-将两个有冲突的文件合并，这里我们将`data/number.txt`的内容修改为`11`。然后将文件添加到index。Git会为`11`创建一个blob。添加操作告诉Git冲突已经解决了。Git移除index中的三项`data/number.txt`，并将stage为`0`且指向新创建blob的项加入。现在index变成了：
+将两个有冲突的文件合并，这里我们将`data/number.txt`的内容修改为`11`，然后将文件添加到index，以告诉Git冲突已经解决了。Git为`11`创建一个blob，移除index中的三项`data/number.txt`，并添加stage为`0`的`data/number.txt`项，该项指向新创建blob。现在index变成了：
 
     0 data/letter.txt 63d8dbd40c23542e740659a7168a0ce3138ea748
     0 data/number.txt 9d607966b721abde8931ddd052181fae905db503
@@ -516,9 +518,9 @@ stage `0`的`data/letter.txt`项跟合并前一样。stage `0`的`data/number.tx
     ~/alpha $ git commit -m 'b11'
               [master 251a513] b11
 
-第7步，提交。Git发现存在`.git/MERGE_HEAD`，也就是说合并还在进行。通过检查index，发现没有冲突。它创建了一个新提交`b11`，用来记录合并后的内容。然后删除`.git/MERGE_HEAD`。此次合并完成。
+第七步，提交。Git发现存在`.git/MERGE_HEAD`，也就是说合并还在进行。通过检查index，发现没有冲突。它创建了一个新提交`b11`，用来记录合并后的内容。然后删除`.git/MERGE_HEAD`。此次合并完成。
 
-第8步，Git将当前分支`master`指向新提交。
+第八步，Git将当前分支`master`指向新提交。
 
 ![b11, the merge commit resulting from the conflicted, recursive merge of b5 into b6](images/22-b11-on-master.png)
 
@@ -531,14 +533,14 @@ stage `0`的`data/letter.txt`项跟合并前一样。stage `0`的`data/number.tx
     ~/alpha $ git rm data/letter.txt
               rm 'data/letter.txt'
 
-使用Git移除`data/letter.txt`。Git将文件从工作区和index删除。
+使用Git移除`data/letter.txt`。Git将该文件从工作区和index删除。
 
 ![After data/letter.txt rmed from working copy and index](images/24-b11-letter-removed-from-wc-and-index.png)
 
     ~/alpha $ git commit -m '11'
               [master d14c7d2] 11
 
-提交变更。按照惯例，Git为index创建一个树图。该树图不包含`data/letter.txt`，因为它已经从index删除了。
+提交变更。按照惯例，Git为index创建一个树图。该树图不再包含`data/letter.txt`，因为它已经从index删除了。
 
 ![11 commit made after data/letter.txt rmed](images/25-11.png)
 
@@ -566,7 +568,7 @@ stage `0`的`data/letter.txt`项跟合并前一样。stage `0`的`data/number.tx
           ~ $ cd alpha
     ~/alpha $ git remote add bravo ../bravo
 
-回到`alpha`仓库，将`bravo`设置为`alpha`仓库的远程仓库。该操作将在`alpha/.git/config`添加几行内容：
+回到`alpha`仓库，将`bravo`设置为`alpha`仓库的远程仓库。该操作将在`alpha/.git/config`添加两行内容：
 
     [remote "bravo"]
         url = ../bravo/
@@ -595,15 +597,15 @@ stage `0`的`data/letter.txt`项跟合并前一样。stage `0`的`data/number.tx
 
 第一步，Git获取`bravo`仓库中`master`指向提交的哈希值，也就是提交`12`的哈希值。
 
-第二步，Git创建一个包含了`12`提交依赖的所有对象的列表，包括提交对象本身、树图内的所有对象、提交的父对象及父对象对应树图内的所有对象。它将已存在`alpha`对象数据库的对象从列表中移除。然后将列表的对象拷贝到`alpha/.git/objects/`。
+第二步，Git创建一个包含了`12`提交依赖的所有对象的列表，包括提交对象本身和祖先提交，以及它们的树图内的所有对象。它将`alpha`对象数据库中已经存在的对象从列表中移除。然后将列表的对象拷贝到`alpha/.git/objects/`。
 
-第三步，将ref文件`alpha/.git/refs/remotes/bravo/master`的内容更新为提交`12`的哈希值。
+第三步，Git将ref文件`alpha/.git/refs/remotes/bravo/master`的内容更新为提交`12`的哈希值。
 
-第四步，`alpha/.git/FETCH_HEAD`的内容设置为：
+第四步，`alpha/.git/FETCH_HEAD`的内容被设置为：
 
     94cd04d93ae88a1f53a4646532b1e8cdfbc0977f branch 'master' of ../bravo
 
-这表示最近一次执行fetch命令获取的是`bravo`的`master`分支的提交`12`。
+这表示最近一次执行fetch命令获取的是`bravo`中`master`分支的提交`12`。
 
 ![alpha after bravo/master fetched](images/28-12-fetched-to-alpha.png)
 
@@ -617,7 +619,7 @@ stage `0`的`data/letter.txt`项跟合并前一样。stage `0`的`data/number.tx
               Updating d14c7d2..94cd04d
               Fast-forward
 
-合并`FETCH_HEAD`。`FETCH_HEAD`只是另一个ref，它解析到待合并提交`12`。`HEAD`指向目的提交`11`。Git使用fast-forward合并将`master`指向`12`提交。
+合并`FETCH_HEAD`。`FETCH_HEAD`只是另一个ref，它解析到源提交`12`。`HEAD`指向目的提交`11`。Git使用fast-forward合并将`master`指向`12`提交。
 
 ![alpha after FETCH_HEAD merged](images/29-12-merged-to-alpha.png)
 
