@@ -52,7 +52,7 @@ Translated from <http://maryrosecook.com/blog/post/git-from-the-inside-out>.
 
 第一，它会在`.git/objects/`目录下创建一个新的blob文件。
 
-这个blob文件包含了`data/letter.txt`文件压缩后的内容，文件名取自内容的哈希值。哈希意味着执行一段算法，将给定内容转换为更小的，且能唯一确定原内容的值的过程。例如，Git对`a`作哈希得到`2e65efe2a145dda7ee51d1741299f848e5bf752e`。哈希值的头两个字符用作对象数据库的目录名：`.git/objects/2e/`，剩下的字符用作blob文件的文件名：`.git/objects/2e/65efe2a145dda7ee51d1741299f848e5bf752e`。
+这个blob文件包含了`data/letter.txt`文件压缩后的内容，文件名取自内容的哈希值。哈希意味着执行一段算法，将给定内容转换为更小的<sup>1</sup>，且能唯一<sup>2</sup>确定原内容的值的过程。例如，Git对`a`作哈希得到`2e65efe2a145dda7ee51d1741299f848e5bf752e`。哈希值的头两个字符用作对象数据库的目录名：`.git/objects/2e/`，剩下的字符用作blob文件的文件名：`.git/objects/2e/65efe2a145dda7ee51d1741299f848e5bf752e`。
 
 注意刚才添加文件时，Git将它的内容保存到`objects`目录的过程。即使我们从工作区把`data/letter.txt`文件删掉，它的内容仍然可以在Git中找回。
 
@@ -224,7 +224,7 @@ commit对象的第一行指向新的`root` tree，第二行指向父提交`a1`�
 
 **图属性**：ref是某段提交历史的入口。这意味着我们可以给某个提交一个有意义的名字。用户将工作组织成不同版本线，并赋予有意义的ref，如`fix-for-bug-376`。Git使用符号链接来操作提交历史，如`HEAD`、`MERGE_HEAD`和`FETCH_HEAD`。
 
-**图属性**：`objects/`目录下的结点是不可变的。这意味着它的内容可以编辑，但不能删除。添加的文件内容和创建的提交都保存在`objects`目录下。
+**图属性**：`objects/`目录下的结点是不可变的。这意味着它的内容可以编辑，但不能删除。添加的文件内容和创建的提交都保存在`objects`目录<sup>3</sup>下。
 
 **图属性**：ref是可变的。因此，一个分支的状态是可以修改的。`master`分支指向的提交可能是项目当前最好的版本，但它会被一个新的更好的提交取代。
 
@@ -232,11 +232,11 @@ commit对象的第一行指向新的`root` tree，第二行指向父提交`a1`�
 
 工作区是在历史里最容易找到的，它就在仓库的根目录，不需要执行Git命令。它也是在历史里我们最经常修改的，用户可以针对一个文件修改N个版本，但Git只记录执行`add`命令时的版本。
 
-`HEAD`指向的提交很容易找到，它就是当前分支的最近一个提交。执行`git statsh`命令后的工作区就是它的内容。同时，`HEAD`也是我们最经常修改的ref。
+`HEAD`指向的提交很容易找到，它就是当前分支的最近一个提交。执行`git statsh`<sup>4</sup>命令后的工作区就是它的内容。同时，`HEAD`也是我们最经常修改的ref。
 
 其它ref指向的提交也很容易找到，我们只要把它们检出就可以了。修改其它分支没有修改`HEAD`来得经常，但当修改其它分支涉及到的功能时，它们就会变得非常有用。
 
-没有被ref指向的提交是很难找到的。在某个ref上的提交越多，操作之前的提交就越不容易。但我们通常很少操作很久之前的提交。
+没有被ref指向的提交是很难找到的。在某个ref上的提交越多，操作之前的提交就越不容易。但我们通常很少操作很久之前的提交<sup>5</sup>。
 
 ### 检出提交
 
@@ -623,14 +623,106 @@ stage `0`的`data/letter.txt`项跟合并前一样。stage `0`的`data/number.tx
 
 ![alpha after FETCH_HEAD merged](images/29-12-merged-to-alpha.png)
 
-### 从远程仓库取回并合并分支
+### 从远程仓库拉取分支
+
+    ~/alpha $ git pull bravo master
+              Already up-to-date.
+
+将`bravo`仓库的`master`分支拉取到`alpha`仓库。pull是”fetch and merge `FETCH_HEAD`“的简写。Git执行这条命令然后报告`master`分支`Already up-to-date`。
 
 ### 克隆仓库
 
-### 推送分支到远程仓库的检出分支
+    ~/alpha $ cd ..
+          ~ $ git clone alpha charlie
+              Cloning into 'charlie'
+
+进入上层目录，克隆`alpha`到`charlie`。克隆到`charlie`和我们之前使用`cp`拷贝`bravo`仓库的结果是相同的。Git首先创建一个目录`charlie`，然后将`charlie`初始化为一个Git仓库，将`alpha`添加为一个远程仓库`origin`，获取`origin`并合并到`FETCH_HEAD`。
+
+### 推送分支到远程仓库的已检出分支
+
+          ~ $ cd alpha
+    ~/alpha $ printf '13' > data/number.txt
+    ~/alpha $ git add data/number.txt
+    ~/alpha $ git commit -m '13'
+              [master 3238468] 13
+
+返回`alpha`仓库，将`data/number.txt`修改为`13`，然后提交到`alpha`仓库的`master`分支。
+
+    ~/alpha $ git remote add charlie ../charlie
+
+将`charlie`设为`alpha`仓库的远程分支。
+
+    ~/alpha $ git push charlie master
+              Writing objects: 100%
+              remote error: refusing to update checked out
+              branch: refs/heads/master because it will make
+              the index and work tree inconsistent
+
+将`master`推送到`charlie`仓库。
+
+`13`提交依赖的所有对象都被拷贝到`charlie`仓库。
+
+此时，推送操作中止了。Git给出了出错信息，它拒绝将分支推送到远程已检出的分支上。这在情理之中，因为如果推送成功，远程分支的index和`HEAD`将会改变。如果此时有人正在编辑远程分支的工作区，他就懵b了。
+
+此时，我们可以创建一个新的分支，将`13`提交合并进来，然后推到`charlie`。但是我们往往希望仓库可以随时提交。我们希望有一个中心仓库可以用来做同步，而又没有人可以直接在远程仓库仓库，就像Github一样。这时我们就需要一个裸仓库(bare repository)。
 
 ### 克隆裸仓库
 
+    ~/alpha $ cd ..
+          ~ $ git clone alpha delta --bare
+              Cloning into bare repository 'delta'
+
+返回上层目录，克隆出一个裸仓库`delta`。这跟普通的克隆只有两点不同：`config`文件会指明该仓库是一个裸仓库，之前在`.git`目录的文件现在直接放在仓库目录下：
+
+    delta
+    ├── HEAD
+    ├── config
+    ├── objects
+    └── refs
+
+![alpha and delta graphs after alpha cloned to delta](images/30-13-alpha-cloned-to-delta-bare.png)
+
 ### 推送分支到裸仓库
 
+          ~ $ cd alpha
+    ~/alpha $ git remote add delta ../delta
+
+回到`alpha`仓库，将`delta`仓库设为`alpha`的远程仓库。
+
+    ~/alpha $ printf '14' > data/number.txt
+    ~/alpha $ git add data/number.txt
+    ~/alpha $ git commit -m '14'
+              [master cb51da8] 14
+
+将`data/number.txt`内容修改为`14`并提交到`alpha`的`master`分支。
+
+![14 commit on alpha](images/31-14-alpha.png)
+
+    ~/alpha $ git push delta master
+              Writing objects: 100%
+              To ../delta
+                3238468..cb51da8 master -> master
+
+将`master`推送到`delta`。此操作分三步。
+
+第一步，`master`分支上`14`提交依赖的所有对象都被从`alpha/.git/objects/`拷贝到`delta/objects`。
+
+第二步，`delta/refs/heads/master`更新为`14`提交。
+
+第三步，`alpha/.git/refs/remotes/delta/master`更新为`14`提交。`alpha`记录了`delta`更新后的状态。
+
+![14 commit pushed from alpha to delta](images/32-14-pushed-to-delta.png)
+
 ### 总结
+
+Git构建在图上，几乎所有的Git命令都是在操作这个图。想要深入了解Git，关注图属性而不是执行流程或命令。
+
+想要学习更多Git知识，可以研究一下`.git`目录。没什么可怕的。看看它里面有哪些东西。修改文件内容，观察发生了什么。手动创建一个提交，看看你能把仓库搞得多惨。然后试着修复它。
+
+### 脚注
+
+1. 在这个例子中，哈希值内容比原文件更长。But, all pieces of content longer than the number of characters in a hash will be expressed more concisely than the original.
+2. 也有可能两个不同的内容有相同的哈希值，但这个可能性很低。
+3. `git prune`删除所有不能被ref访问到的对象。执行此命令可能会丢失数据。
+4. `git stash`将工作区和`HEAD`提交的所有差异保存到一个安全的地方。它们可以在以后取回。
+5. `rebase`命令可以用来添加、编辑或删除历史提交。
