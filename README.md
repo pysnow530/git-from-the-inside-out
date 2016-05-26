@@ -721,7 +721,7 @@ Git构建在图上，几乎所有的Git命令都是在操作这个图。想要�
 
 ### 脚注
 
-1. 在这个例子中，哈希值内容比原文件更长。But, all pieces of content longer than the number of characters in a hash will be expressed more concisely than the original.
+1. 在这个例子中，哈希值内容比原文件更长。不管是否能节约空间，Git始终选择使用哈希值作为文件名。
 2. 也有可能两个不同的内容有相同的哈希值，但这个可能性很低。
 3. `git prune`删除所有不能被ref访问到的对象。执行此命令可能会丢失数据。
 4. `git stash`将工作区和`HEAD`提交的所有差异保存到一个安全的地方。它们可以在以后取回。
